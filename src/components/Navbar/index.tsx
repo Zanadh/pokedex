@@ -28,8 +28,8 @@ const NavbarItem = ({ path, label }: { label: string; path: string }) => (
 
 const Navbar = () => {
   return (
-    <nav>
-      <Card className="p-4 pb-0">
+    <nav className="sticky top-4 z-20">
+      <Card className="p-4 pb-0 border">
         <ul>
           {menuItems.map((item, i) => (
             <NavbarItem {...item} key={i} />
