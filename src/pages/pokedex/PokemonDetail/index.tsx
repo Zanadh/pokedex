@@ -6,8 +6,10 @@ function PokemonDetail() {
   return (
     <div>
       <div className="border relative h-6 bg-red-400">
-        <button className="absolute top-1 right-1" onClick={() => navigate('/pokedex')}>
-          <Card className="p-2 w-10 h-10 rounded-full">X</Card>
+        <button className="absolute top-1 left-1" onClick={() => navigate('/pokedex')}>
+          <Card className="py-2 px-4 rounded-full shadow-md hover:shadow-lg">
+            <i className="fa-solid fa-arrow-left"></i>
+          </Card>
         </button>
       </div>
     </div>

@@ -1,6 +1,7 @@
+import { IPokemonListItem } from './pokemon';
 export * from './pokemon';
 
-export interface IPaginationResponse<T> {
+export interface IPaginationResponse<T = IPokemonListItem> {
   count: number;
   next: string | null;
   previous: string | null;

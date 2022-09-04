@@ -1,7 +1,8 @@
 import { IPokemonDetail } from '../interfaces';
 import Axios from './Axios';
+import { URL_PATH } from './routes';
 
 const getPokemonDetail = ({ name }: { name: string }): Promise<IPokemonDetail> =>
-  Axios.get(`https://pokeapi.co/api/v2/pokemon/${name}`).then((response) => response.data);
+  Axios.get(`${URL_PATH.POKEMON}/${name}`).then((response) => response.data);
 
 export default getPokemonDetail;

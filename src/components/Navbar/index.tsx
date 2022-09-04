@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { NavLink } from 'react-router-dom';
 import { Card } from '../';
 
+// TODO: add Icon
 const menuItems = [
   { label: 'Pokédex', path: 'pokedex' },
   { label: 'Items', path: 'games' },
@@ -12,7 +13,10 @@ const NavbarItem = ({ path, label }: { label: string; path: string }) => (
   <li className="inline">
     <NavLink className="font-bold mx-3" to={path}>
       {({ isActive }) => (
-        <div className="inline-flex flex-col text-gray-600">
+        <div
+          className="inline-flex flex-col text-gray-600 font-mono uppercase"
+          style={{ fontSize: '1.2rem' }}
+        >
           {label}
           <div
             className={clsx(
@@ -29,7 +33,7 @@ const NavbarItem = ({ path, label }: { label: string; path: string }) => (
 const Navbar = () => {
   return (
     <nav className="sticky top-4 z-20">
-      <Card className="p-4 pb-0 border">
+      <Card className="p-4 pb-0 border !rounded-">
         <ul>
           {menuItems.map((item, i) => (
             <NavbarItem {...item} key={i} />

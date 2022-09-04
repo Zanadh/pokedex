@@ -1,48 +1,157 @@
-import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { Fragment, useEffect } from 'react';
+import clsx from 'clsx';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { useNavigate } from 'react-router-dom';
-import getPokemonList from '../../apis/getPokemonList';
-import { PokemonCard } from '../../components';
+import { useNavigate, useParams } from 'react-router-dom';
+import { getPaginatedDataList } from '../../apis/getPokemonList';
+import { URL_PATH } from '../../apis/routes';
+import { AttributeFilters, Card, PokemonCard } from '../../components';
+import { TSelectValue } from '../../components/AttributeFilters';
+import useGetAttributeDetail from '../../hooks/useGetAttributeDetail';
+import {
+  IPokemonEggGroupDetail,
+  IPokemonListItem,
+  IPokemonTypeDetail,
+  TPokemonAttribute,
+} from '../../interfaces';
+
+const filterDefaultValue = { TYPE: null, 'EGG-GROUP': null };
+type TFilterState = Record<TPokemonAttribute, TSelectValue>;
 
 const Pokedex = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const { ref: bottomRef, inView } = useInView();
-  // const [gridContainer] = useAutoAnimate<HTMLDivElement>(); // TODO: fix slow performance on big data
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [{ isOpen, keyword }, setSearchInput] = useState({ isOpen: false, keyword: '' });
+  const [filter, setFilter] = useState<TFilterState>(filterDefaultValue);
 
-  const { data, isFetchingNextPage, fetchNextPage, hasNextPage } = useInfiniteQuery(
+  // TODO: create customHook usePokemonData
+  const { data, isFetchingNextPage, fetchNextPage, hasNextPage, isFetching } = useInfiniteQuery(
     ['pokemon-list'],
-    async ({ pageParam }) => await getPokemonList({ url: pageParam }),
+    async ({ pageParam = URL_PATH.POKEMON }) =>
+      await getPaginatedDataList<IPokemonListItem>({ url: pageParam }),
     {
+      staleTime: Infinity,
       getPreviousPageParam: (firstPage) => firstPage.previous ?? undefined,
-      getNextPageParam: (lastPage) => lastPage.next ?? undefined,
+      getNextPageParam: (firstPage) => firstPage.next ?? undefined,
     },
   );
 
+  const { data: pokemonTypeAttrDetail, refetch: fetchTypeAttrDetail } =
+    useGetAttributeDetail<IPokemonTypeDetail>(
+      {
+        id: filter.TYPE?.value || 0,
+        attributeType: 'TYPE',
+      },
+      !!filter.TYPE?.value,
+    );
+
+  const { data: pokemonTypeAttrEggGroup, refetch: fetchTypeAttrEggGroup } =
+    useGetAttributeDetail<IPokemonEggGroupDetail>(
+      {
+        id: filter['EGG-GROUP']?.value || 0,
+        attributeType: 'TYPE',
+      },
+      !!filter['EGG-GROUP']?.value,
+    );
+
   useEffect(() => {
-    if (inView) {
+    !!filter.TYPE?.value && fetchTypeAttrDetail();
+  }, [filter.TYPE?.value]);
+
+  useEffect(() => {
+    !!filter['EGG-GROUP']?.value && fetchTypeAttrEggGroup();
+  }, [filter['EGG-GROUP']?.value]);
+
+  const fetchedPokemon = useMemo(() => {
+    let allData: IPokemonListItem[] = [];
+    if (!!filter.TYPE?.value && pokemonTypeAttrDetail) {
+      allData = pokemonTypeAttrDetail.pokemon.flatMap(({ pokemon }) => pokemon);
+    } else if (!!filter['EGG-GROUP']?.value && pokemonTypeAttrEggGroup) {
+      allData = pokemonTypeAttrEggGroup.pokemon_species.map((pokemon) => pokemon);
+    } else {
+      if (!data) return allData;
+      allData = data.pages.flatMap((page) => page.results);
+    }
+
+    return allData.filter(
+      (pokemon) => pokemon.name.includes(keyword?.toLowerCase()) || pokemon.name === id,
+    );
+  }, [
+    data?.pages.length,
+    keyword,
+    filter.TYPE?.value,
+    pokemonTypeAttrDetail,
+    pokemonTypeAttrEggGroup,
+  ]);
+
+  useEffect(() => {
+    if (inView && !isFetching) {
       fetchNextPage();
     }
-  }, [inView]);
+  }, [inView, isFetching]);
+
+  const handleSelectFilter = (v: TSelectValue, type: TPokemonAttribute) => {
+    setFilter({ ...filterDefaultValue, [type]: v || null });
+  };
 
   return (
     <>
+      <div className="flex justify-between mb-4">
+        <AttributeFilters onSelectFilter={handleSelectFilter} value={filter} />
+        <Card
+          className={clsx(
+            'pl-4 flex flex-row-reverse items-center transition-all rounded-full overflow-hidden',
+            isOpen ? 'w-[223px]' : 'w-[48px]',
+          )}
+        >
+          <div
+            className="pr-4 cursor-pointer"
+            onClick={() => {
+              if (!isOpen) searchInputRef.current?.focus();
+              else if (searchInputRef.current?.value) searchInputRef.current.value = '';
+              setSearchInput((prev) => ({
+                keyword: prev.isOpen ? '' : prev.keyword,
+                isOpen: !prev.isOpen,
+              }));
+            }}
+          >
+            <i
+              className={clsx(
+                'fa-solid  text-red-600 hover:scale-110',
+                isOpen ? 'fa-circle-xmark' : 'fa-magnifying-glass',
+              )}
+            ></i>
+          </div>
+          <input
+            className={clsx('outline-none', isOpen ? 'w-full' : 'w-0')}
+            onChange={({ target }) =>
+              setSearchInput((prev) => ({ ...prev, keyword: target?.value || '' }))
+            }
+            ref={searchInputRef}
+          />
+        </Card>
+      </div>
       <div
         className="grid gap-4"
         style={{ gridTemplateColumns: 'repeat( auto-fit, minmax(340px, 1fr) )' }}
       >
-        {data?.pages.map((page, i) => (
-          <Fragment key={i}>
-            {page.results.map((result, i) => (
-              <PokemonCard onClick={() => navigate(result.name)} {...result} key={i} />
-            ))}
-          </Fragment>
-        ))}
+        {fetchedPokemon.map((pokemon, i) => {
+          const isSelected = id === pokemon.name;
+          return (
+            <PokemonCard
+              animate={isSelected}
+              onClick={() => navigate(isSelected ? '' : pokemon.name)}
+              {...pokemon}
+              key={i}
+            />
+          );
+        })}
         <div className="w-full col-span-full">
           <div className="py-8 w-fit m-auto">
             {isFetchingNextPage
-              ? '...'
+              ? 'Exploring the bush...'
               : hasNextPage
               ? 'Scroll more to load'
               : 'You have seen it all!'}

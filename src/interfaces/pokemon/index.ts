@@ -3,6 +3,8 @@ export interface IPokemonListItem {
   url: string;
 }
 
+export type TPokemonAttribute = 'TYPE' | 'EGG-GROUP';
+
 // TODO: split interface
 export interface IPokemonDetail {
   id: number;
@@ -120,4 +122,32 @@ export interface IPokemonDetail {
       };
     },
   ];
+}
+
+export interface IPokemonEggGroupDetail {
+  id: number;
+  name: string;
+  pokemon_species: IPokemonListItem[];
+}
+
+export interface IPokemonTypeDetail {
+  id: number;
+  damage_relations: {
+    double_damage_from: IPokemonListItem[];
+    double_damage_to: IPokemonListItem[];
+    half_damage_from: IPokemonListItem[];
+    half_damage_to: IPokemonListItem[];
+    no_damage_from: IPokemonListItem[];
+    no_damage_to: IPokemonListItem[];
+  };
+  game_indices: {
+    game_index: number;
+    generation: IPokemonListItem;
+  }[];
+  generation: IPokemonListItem;
+  move_damage_class: IPokemonListItem;
+  moves: IPokemonListItem[];
+  name: 'fire';
+  names: { language: IPokemonListItem; name: string }[];
+  pokemon: { pokemon: IPokemonListItem; slot: string }[];
 }
