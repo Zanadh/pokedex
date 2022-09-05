@@ -23,7 +23,7 @@ const AttributeFilters = (props?: {
   ] = useGetAttributes('EGG-GROUP', 'TYPE');
 
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-3 z-20">
       <Card className="flex items-center rounded-full gap-4 transition-all w-fit float-right">
         <Select
           placeholder="Select Type..."

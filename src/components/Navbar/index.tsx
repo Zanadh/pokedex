@@ -32,7 +32,7 @@ const NavbarItem = ({ path, label }: { label: string; path: string }) => (
 
 const Navbar = () => {
   return (
-    <nav className="sticky top-4 z-20">
+    <nav className="sticky top-4 z-30">
       <Card className="p-4 pb-0 border !rounded-">
         <ul>
           {menuItems.map((item, i) => (

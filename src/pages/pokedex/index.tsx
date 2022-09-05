@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getPaginatedDataList } from '../../apis/getPokemonList';
@@ -87,10 +87,10 @@ const Pokedex = () => {
   ]);
 
   useEffect(() => {
-    if (inView && !isFetching) {
+    if (inView && !isFetching && !keyword) {
       fetchNextPage();
     }
-  }, [inView, isFetching]);
+  }, [inView, isFetching, keyword]);
 
   const handleSelectFilter = (v: TSelectValue, type: TPokemonAttribute) => {
     setFilter({ ...filterDefaultValue, [type]: v || null });
@@ -133,6 +133,8 @@ const Pokedex = () => {
           />
         </Card>
       </div>
+
+      {/* TODO: Change to virtualized list */}
       <div
         className="grid gap-4"
         style={{ gridTemplateColumns: 'repeat( auto-fit, minmax(340px, 1fr) )' }}
@@ -148,19 +150,25 @@ const Pokedex = () => {
             />
           );
         })}
-        <div className="w-full col-span-full">
-          <div className="py-8 w-fit m-auto">
-            {isFetchingNextPage
-              ? 'Exploring the bush...'
-              : hasNextPage
-              ? 'Scroll more to load'
-              : 'You have seen it all!'}
-          </div>
-          <div className="border" ref={bottomRef} />
+      </div>
+
+      <div className="w-full">
+        <div
+          className={clsx(
+            'pt-8 pb-12 w-fit m-auto ',
+            isFetchingNextPage ? 'animate-pulse' : hasNextPage && 'animate-bounce',
+          )}
+        >
+          {isFetchingNextPage
+            ? 'Exploring the bush...'
+            : hasNextPage
+            ? 'Scroll more to load'
+            : 'You have seen it all!'}
         </div>
+        <div className="border" ref={bottomRef} />
       </div>
     </>
   );
 };
 
-export default Pokedex;
+export default memo(Pokedex);

@@ -1,13 +1,13 @@
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import clsx from 'clsx';
 import { Outlet, useParams } from 'react-router-dom';
-import { Card, Navbar } from '../components';
+import { Navbar } from '../components';
 import Pokedex from '../pages/pokedex';
 
 export function NavbarLayout() {
   const [parent] = useAutoAnimate<HTMLDivElement>({ duration: 100 });
   return (
-    <div className="flex flex-col max-w-7xl m-auto p-4">
+    <div className="flex flex-col max-w-7xl m-auto p-4 min-h-screen">
       <Navbar />
       <div className="flex-1 flex pt-5" ref={parent}>
         <Outlet />
@@ -18,6 +18,9 @@ export function NavbarLayout() {
 
 export function PokedexLayout() {
   const { id } = useParams();
+
+  // TODO: prevent scroll when pokemon detail shown in fullscreen
+
   return (
     <div className="flex max-w-7xl flex-1">
       <div className={clsx('flex flex-1 w-0 lg:w-full transition-all overflow-hidden')}>
@@ -25,14 +28,14 @@ export function PokedexLayout() {
           <Pokedex />
         </div>
       </div>
-      <Card
+      <div
         className={clsx(
-          'bg-white sticky max-h-content top-[94px] rounded-2xl overflow-hidden transition-all lg:max-w-lg',
+          'sticky max-h-content  top-[94px] rounded-2xl transition-all lg:max-w-lg',
           !id ? 'w-0' : 'lg:w-[40%] w-full',
         )}
       >
         <Outlet />
-      </Card>
+      </div>
     </div>
   );
 }
