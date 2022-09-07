@@ -144,7 +144,7 @@ function PokemonDetail() {
           src={pokemonDetail?.sprites.other['official-artwork'].front_default || ''}
         />
       </div>
-      <Card className="flex flex-col flex-1 h-[50%] p-4 gap-4">
+      <Card className="flex flex-col flex-1 h-[50%] p-4 gap-4 overflow-auto">
         <div className="flex justify-between border-b">
           <div className="flex flex-col">
             <span className="font-bold" style={{ fontSize: 20 }}>
